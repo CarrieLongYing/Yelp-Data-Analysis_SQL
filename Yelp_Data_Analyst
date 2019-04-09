@@ -1,0 +1,430 @@
+Yelp_Data_Analyst
+This a SQL practice to understand Yelp dataset and get some business insights from its merchants and users infomation
+
+PART 1: Yelp Dataset Profiling and Understanding
+
+1. Profile the data by finding the total number of records for each of table:
+
+SELECT COUNT(*)
+FROM attribute
+
+i. Attribute table = 10000
+ii. Business table = 10000
+iii. Category table = 10000
+iv. Checkin table = 10000
+v. elite_years table = 10000
+vi. friend table = 10000
+vii. hours table = 10000
+viii. photo table = 10000
+ix. review table = 10000
+x. tip table = 10000
+xi. user table = 10000
+
+11 tables in total and 10000 rows in each
+
+
+
+2. The total distinct records by either the foreign key or primary key for each table
+(foreign key: defined in a second table, but it refers to the primary key in the first table)
+
+SELECT COUNT(DISTINCT(user_id))
+FROM elite_years
+
+i. Business:	primary key: id = 10000
+				foreign key: na
+ii. Hours:		primary key: na
+				foreign key: business_id = 1562
+iii. Category:	primary key: na
+				foreign key: business_id = 2643
+iv. Attribute:	primary key: na
+				foreign key: business_id = 1115
+v. Review:		primary key: id = 10000
+				foreign key: business_id = 8090
+				foreign key: user_id = 9581
+vi. Checkin:	primary key: na
+				foreign key: business_id = 1115
+vii. Photo:		primary key: id = 10000
+				foreign key: business_id = 6493
+viii. Tip:		primary key: na
+				foreign key: business_id = 3979
+				foreign key: user_id = 537
+ix. User:		primary key: id = 10000
+x. Friend:		primary key: na
+				foreign key: user_id = 11
+xi. Elite_years:primary key: na
+				foreign key: user_id = 2780
+
+From the distinct number of foreign key we can forecast that: if you want to join business table with other tables such as hours, category and attribute on the key of business_id, you would only return a few data. Same thing happen if you analyze users data
+
+
+
+3. Are there any columns with null values in the Users table?
+
+SELECT COUNT(*) FROM user
+WHERE id is NULL 
+OR name is NULL 			OR review_count is NULL  		OR yelping_since is NULL 
+OR useful is NULL   		OR funny is NULL         		OR cool is NULL
+OR fans is NULL 			OR average_stars is NULL 		OR compliment_hot is NULL 
+OR compliment_more is NULL  OR compliment_profile is NULL   OR compliment_cute is NULL 
+OR compliment_list is NULL  OR compliment_note is NULL      OR compliment_plain is NULL 
+OR compliment_cool is NULL  OR compliment_funny is NULL     OR compliment_writer is NULL 
+OR compliment_photos is NULL
+
+no columns include null values in the users table, which is good for analysis
+
+
+
+4. Take a look at the distribution of some main column to have a big picture of the data
+
+SELECT MIN(stars), MAX(stars), AVG(stars)
+FROM review
+
+i. Table: Review, Column: Stars
+	min: 1		max: 5		avg: 3.7082	
+
+ii. Table: Business, Column: Stars
+	min: 1		max: 5		avg: 3.6549
+
+iii. Table: Tip, Column: Likes
+	min: 0		max: 2		avg: 0.0144
+
+iv. Table: Checkin, Column: Count
+	min: 1		max: 53		avg: 1.9414
+
+v. Table: User, Column: Review_count
+	min: 0		max: 2000		avg: 24.2995
+
+
+
+PART 2: Try some simple queries to analyze this dataset
+
+1. The cities with the most reviews in descending order:
+
+SELECT city, SUM(review_count)
+FROM business
+GROUP BY  city
+ORDER BY SUM(review_count) DESC	
+	
+| city            | SUM(review_count) |
++-----------------+-------------------+
+| Las Vegas       |             82854 |
+| Phoenix         |             34503 |
+| Toronto         |             24113 |
+| Scottsdale      |             20614 |
+| Charlotte       |             12523 |
+| Henderson       |             10871 |
+| Tempe           |             10504 |
+| Pittsburgh      |              9798 |
+| Montréal        |              9448 |
+| Chandler        |              8112 |
+| Mesa            |              6875 |
+| Gilbert         |              6380 |
+| Cleveland       |              5593 |
+| Madison         |              5265 |
+| Glendale        |              4406 |
+| Mississauga     |              3814 |
+| Edinburgh       |              2792 |
+| Peoria          |              2624 |
+| North Las Vegas |              2438 |
+| Markham         |              2352 |
+| Champaign       |              2029 |
+| Stuttgart       |              1849 |
+| Surprise        |              1520 |
+| Lakewood        |              1465 |
+| Goodyear        |              1155 |
+	
+
+
+2. Find the distribution of star ratings to the business in the some cities:
+
+i. Avon
+
+SELECT stars, COUNT(stars)
+FROM business 
+WHERE city = 'Avon'
+GROUP BY stars
+
+| stars | COUNT(stars) |
++-------+--------------+
+|   1.5 |            1 |
+|   2.5 |            2 |
+|   3.5 |            3 |
+|   4.0 |            2 |
+|   4.5 |            1 |
+|   5.0 |            1 |
+
+ii. Beachwood
+
+| stars | COUNT(stars) |
++-------+--------------+
+|   2.0 |            1 |
+|   2.5 |            1 |
+|   3.0 |            2 |
+|   3.5 |            2 |
+|   4.0 |            1 |
+|   4.5 |            2 |
+|   5.0 |            5 |		
+
+
+
+3. The top 3 users based on their total number of reviews:
+		
+SELECT id, name, review_count
+FROM USER 
+ORDER BY review_count DESC
+LIMIT 3	
+		
+| -G7Zkl1wIWBBmD0KRy_sCw | Gerald |         2000 |
+| -3s52C4zL_DHRK0ULG6qtg | Sara   |         1629 |
+| -8lbUNlXVSoXqaRRiHiSNg | Yuri   |         1339 |		
+
+
+
+4. Does posing more reviews correlate with more fans?
+
+SELECT id, review_count, fans
+FROM USER 
+ORDER BY review_count DESC
+
+| id                     | review_count | fans |
++------------------------+--------------+------+
+| -G7Zkl1wIWBBmD0KRy_sCw |         2000 |  253 |
+| -3s52C4zL_DHRK0ULG6qtg |         1629 |   50 |
+| -8lbUNlXVSoXqaRRiHiSNg |         1339 |   76 |
+| -K2Tcgh2EKX6e6HqqIrBIQ |         1246 |  101 |
+| -FZBTkAZEXoP7CYvRV2ZwQ |         1215 |  126 |
+| --2vR0DIsmQ6WfcSzKWigw |         1153 |  311 |
+| -gokwePdbXjfS0iF7NsUGA |         1116 |   16 |
+| -DFCC64NXgqrxlO8aLU5rg |         1039 |  104 |
+| -8EnCioUmDygAbsYZmTeRQ |          968 |  497 |
+| -0IiMAZI2SsQ7VmyzJjokQ |          930 |  173 |
+| -fUARDNuXAfrOn4WLSZLgA |          904 |   38 |
+| -hKniZN2OdshWLHYuj21jQ |          864 |   43 |
+| -9da1xk7zgnnfO1uTVYGkA |          862 |  124 |
+| -B-QEUESGWHPE_889WJaeg |          861 |  115 |
+| -kLVfaJytOJY2-QdQoCcNQ |          842 |   85 |
+| -kO6984fXByyZm3_6z2JYg |          836 |   37 |
+| -lh59ko3dxChBSZ9U7LfUw |          834 |  120 |
+| -g3XIcCb2b-BD0QBCcq2Sw |          813 |  159 |
+| -l9giG8TSDBG1jnUBUXp5w |          775 |   61 |
+| -dw8f7FLaUmWR7bfJ_Yf0w |          754 |   78 |
+| -AaBjWJYiQxXkCMDlXfPGw |          702 |   35 |
+| -jt1ACMiZljnBFvS6RRvnA |          696 |   10 |
+| -IgKkE8JvYNWeGu8ze4P8Q |          694 |  101 |
+| -hxUwfo3cMnLTv-CAaP69A |          676 |   25 |
+| -H6cTbVxeIRYR-atxdielQ |          675 |   45 |	
+
+Look at the review_count column and the fans column, review_count is in a descending order, but do not see a obvious relationship between the two columns
+
+
+	
+5. Are there more reviews with the word "love" or with the word "hate"?
+
+SELECT (SELECT COUNT(*)
+		FROM review
+		WHERE text LIKE '%love%') AS love,
+
+		(SELECT COUNT(*)
+		FROM review
+		WHERE text LIKE '%hate%')
+		AS hate
+
+| love | hate |
++------+------+
+| 1780 |  232 |
+
+There are far more reviews with the word "love" than with the word "hate" 
+
+
+
+6. The top 10 users with the most fans:
+
+SELECT id, name, fans
+FROM user
+ORDER BY fans DESC
+limit 10	
+	
+| -9I98YbNQnLdAmcYfb324Q | Amy       |  503 |
+| -8EnCioUmDygAbsYZmTeRQ | Mimi      |  497 |
+| --2vR0DIsmQ6WfcSzKWigw | Harald    |  311 |
+| -G7Zkl1wIWBBmD0KRy_sCw | Gerald    |  253 |
+| -0IiMAZI2SsQ7VmyzJjokQ | Christine |  173 |
+| -g3XIcCb2b-BD0QBCcq2Sw | Lisa      |  159 |
+| -9bbDysuiWeo2VShFJJtcw | Cat       |  133 |
+| -FZBTkAZEXoP7CYvRV2ZwQ | William   |  126 |
+| -9da1xk7zgnnfO1uTVYGkA | Fran      |  124 |
+| -lh59ko3dxChBSZ9U7LfUw | Lissa     |  120 |
+	
+	
+11. Is there a strong relationship (or correlation) between having a high number of fans and being listed as "useful" or "funny" ? 
+Out of the top 10 users with the highest number of fans, what percent are also listed as “useful” or “funny”?
+
+	
+SELECT name, fans, 
+      (useful / (SELECT SUM(useful)*1.0 FROM user)) AS useful_percent,
+      (funny / (SELECT SUM(funny)*1.0 FROM user)) AS funny_percent
+FROM user
+ORDER BY fans DESC
+limit 10	
+	
+| name      | fans |    useful_percent |     funny_percent |
++-----------+------+-------------------+-------------------+
+| Amy       |  503 |   0.0084769144662 |   0.0103014193694 |
+| Mimi      |  497 | 0.000675315256607 | 0.000556615455356 |
+| Harald    |  311 |    0.322997769095 |     0.49377034369 |
+| Gerald    |  253 |   0.0460475663688 |  0.00937372694382 |
+| Christine |  173 |   0.0127022332702 |   0.0268062776543 |
+| Lisa      |  159 | 0.000126128919522 | 5.24347892726e-05 |
+| Cat       |  133 |  0.00279060234442 |  0.00271047526086 |
+| William   |  126 |   0.0246030223642 |   0.0377570817216 |
+| Fran      |  124 |    0.025885333046 |   0.0306783851698 |
+| Lissa     |  120 |  0.00119559704963 |   0.0006050167993 |	
+	
+
+It shows that the useful_percent or the funny_percent is higher than the averge percentage of 1/10000
+
+Furthermore, we can sum up the total percentage of the top ten users:
+
+SELECT SUM(useful_percent), SUM(funny_percent)
+FROM
+	(SELECT name, fans, 
+    (useful / (SELECT SUM(useful)*1.0 FROM user)) AS useful_percent,
+    (funny / (SELECT SUM(funny)*1.0 FROM user)) AS funny_percent
+	FROM user
+	ORDER BY fans DESC
+	limit 10)
+
+| SUM(useful_percent) | SUM(funny_percent) |
++---------------------+--------------------+
+|       0.44550048218 |     0.612611776854 |
+
+which means the top 10 users by fans number account for a majority of the reviews of "useful" and “funny”
+
+
+
+PART 2: some deeper business ananlysis
+
+1. Las Vegas is a night city, so I want to know if the stores in LV open until midnight would improve its rating?
+   I will group rating between 1-3 as one and then rating 4-5 as another group
+
+
+SELECT id, stars_group, SUM(is_midnight) AS days_open_midnight
+FROM (SELECT id, stars_group,
+	 		 CASE WHEN (hours LIKE "%-0:00") THEN "1"
+     		 ELSE "0"
+      		 END is_midnight
+	  FROM (SELECT DISTINCT(business.id),
+				   CASE WHEN (business.stars >= 1 AND stars <= 3) THEN '1-3'
+	   			   WHEN (business.stars >= 4 AND stars <= 5) THEN '4-5' 
+	   			   END stars_group
+			FROM business
+			WHERE business.city LIKE "%LAS VEGAS%") tb1
+			INNER JOIN hours
+			ON tb1.id = hours.business_id) tb3
+GROUP BY id, stars_group
+HAVING stars_group IS NOT NULL
+ORDER BY stars_group
+
+
+| id                     | stars_group | days_open_midnight |
++------------------------+-------------+--------------------+
+| 1CP8aJa8ILlfM5deroar0Q | 1-3         |                  7 |
+| 1q44aWEcDN7uRvA2l8xpvQ | 1-3         |                  0 |
+| -CdstAUdEvci8GeJG8owpQ | 4-5         |                  0 |
+| 0K2rKvqdBmiOAUTebcUohQ | 4-5         |                  0 |
+| 0aKsGxx7XP2TMs_fn_9xVw | 4-5         |                  0 |
+| 0sOwP5b_178FkbT_fat8lQ | 4-5         |                  0 |
+| 1YdiQM-3oAQMPlFJbI0e0A | 4-5         |                  0 |
+| 1ZnVfS-qP19upP_fwOhZsA | 4-5         |                  0 |
+| 1_iibQxnp0WhQH2m7kXtng | 4-5         |                  0 |
+| 1aj4TG0eFq6NaPBKk6bK7Q | 4-5         |                  0 |
+| 2RhICgMZI6DK-t374VRoow | 4-5         |                  0 |
+
+We can see that only one store in Las Vegas opened until 00:00 (7 means 7 days out of a week opens until 00:00), and its raing is 1-3. which tells us that opening in the midnight does necessary imply a higher score even in cites like Las Vegas
+
+
+
+1.2. Do the two groups have a different number of reviews?
+
+SELECT stars_group, AVG(review_count)
+FROM (SELECT review_count,
+			 CASE WHEN (business.stars >= 1 AND stars <= 3) THEN '1-3'
+	         WHEN (business.stars >= 4 AND stars <= 5) THEN '4-5' 
+	         END stars_group
+	  FROM business
+	  WHERE business.city LIKE "%LAS VEGAS%")
+GROUP BY stars_group
+HAVING stars_group IS NOT NULL
+
+| stars_group | AVG(review_count) |
++-------------+-------------------+
+| 1-3         |     34.7755102041 |
+| 4-5         |     55.5956221198 |
+
+So we can see that stars_group in 4-5 would receive more reviews
+         
+
+         
+1.3. Any difference in location data between these two groups?
+
+SELECT stars_group, AVG(latitude), AVG(longitude)
+FROM (SELECT latitude, longitude,
+			 CASE WHEN (business.stars >= 1 AND stars <= 3) THEN '1-3'
+	   		 WHEN (business.stars >= 4 AND stars <= 5) THEN '4-5' 
+	   		 END stars_group
+	 FROM business
+     WHERE business.city LIKE "%LAS VEGAS%"
+     ORDER BY stars_group )
+GROUP BY stars_group
+HAVING stars_group IS NOT NULL
+
+| stars_group | AVG(latitude) | AVG(longitude) |
++-------------+---------------+----------------+
+| 1-3         | 36.1405121495 | -115.189404206 |
+| 4-5         | 36.1295241935 | -115.202160138 |
+
+Cannot see too much difference in these two groups
+
+
+
+
+2. Another valuable side of this Yelp dataset is to predict if a store wii close.
+		
+
+SELECT *
+FROM       (SELECT business.is_open, MAX(review_count),AVG(review_count ), COUNT(review_count)
+ 	   		FROM business
+      		 GROUP BY is_open) tb1
+INNER JOIN (SELECT is_open, SUM(large_700)
+  			FROM (SELECT is_open, 
+    					 CASE WHEN (review_count > 700) THEN 1
+         				 ELSE 0
+         				 END large_700
+    		FROM business)
+GROUP BY is_open) tb2
+ON tb1.is_open = tb2.is_open
+
+| is_open | MAX(review_count) | AVG(review_count ) | COUNT(review_count) | is_open  | SUM(large_700) |
++---------+-------------------+--------------------+---------------------+----------+----------------+
+|       0 |               700 |      23.1980263158 |                1520 |        0 |              0 |
+|       1 |              3873 |      31.7570754717 |                8480 |        1 |             24 |
+
+We can see stores that are still opening will receive more acount, and all stores that receive more than 700 revirew are still opening.
+PS: one note is that a store can close for a individual rather that bad operation, if we have data for that we can imporve our predict
+         
+         
+SELECT is_open, AVG(stars), AVG(useful), AVG(funny), avg(cool)
+FROM (SELECT business.id, business.is_open, review.stars,review.useful,review.funny,review.cool
+  	  FROM business
+      INNER JOIN review
+      ON business.id = review.business_id)
+GROUP BY is_open
+
+| is_open |    AVG(stars) |    AVG(useful) |     AVG(funny) |      avg(cool) |
++---------+---------------+----------------+----------------+----------------+
+|       0 | 3.64788732394 | 0.971830985915 | 0.211267605634 | 0.422535211268 |
+|       1 |  3.7610619469 | 0.856637168142 | 0.269026548673 | 0.387610619469 |
+
+Stores still openning have higher stars and more reviews with funny
+         
+
