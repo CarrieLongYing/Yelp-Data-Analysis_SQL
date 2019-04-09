@@ -7,4 +7,4 @@ and it will be divided into three parts:
 
 -- PART 2: Try some simple queries to analyze this dataset
 
--- PART 3: some deeper business ananlysis
+-- PART 3: Some deeper business ananlysis
